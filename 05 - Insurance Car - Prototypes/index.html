@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/custom.css">
+
+  <title>Car Insurance Quote</title>
+</head>
+
+<body class="bg-gray-50">
+  <div class="container mx-auto">
+    <div id="content" class="pb-10">
+      <header class="bg-teal-500 text-white py-3 font-bold uppercase shadow-md">
+        <h1 class="text-center text-xl">Get Your Car Insurance Quote</h1>
+      </header>
+
+      <form class="mt-10 max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md" id="cotizar-seguro">
+        <!-- Select Brand -->
+        <div class="flex items-center mb-5">
+          <label class="font-bold uppercase mr-2 w-24" for="marca">Brand:</label>
+          <select class="flex-1 bg-gray-100 p-3 rounded focus:outline-none" id="marca">
+            <option value="">- Select -</option>
+            <option value="1">American</option>
+            <option value="2">Asian</option>
+            <option value="3">European</option>
+          </select>
+        </div>
+
+        <!-- Select Year -->
+        <div class="flex items-center mb-5">
+          <label class="font-bold uppercase mr-2 w-24" for="year">Year:</label>
+          <select class="flex-1 bg-gray-100 p-3 rounded focus:outline-none" id="year"></select>
+        </div>
+
+        <!-- Insurance Type -->
+        <fieldset class="mt-6">
+          <legend class="font-bold uppercase text-2xl text-center w-full mb-4">Insurance Type</legend>
+
+          <div class="flex justify-around">
+            <div class="flex items-center">
+              <label class="font-bold uppercase mr-2">Basic</label>
+              <input type="radio" name="tipo" value="basico" checked class="w-5 h-5">
+            </div>
+            <div class="flex items-center">
+              <label class="font-bold uppercase mr-2">Complete</label>
+              <input type="radio" name="tipo" value="completo" class="w-5 h-5">
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Spinner (hidden by default) -->
+        <div id="cargando" class="hidden mt-10 flex justify-center">
+          <div class="spinner">
+            <div class="rect1"></div>
+            <div class="rect2"></div>
+            <div class="rect3"></div>
+            <div class="rect4"></div>
+            <div class="rect5"></div>
+          </div>
+        </div>
+
+        <!-- Result -->
+        <div id="resultado" class="mt-6 text-center"></div>
+
+        <!-- Submit Button -->
+        <div class="flex justify-center mt-8">
+          <button
+            type="submit"
+            class="bg-teal-500 hover:bg-teal-700 transition-colors text-white font-bold py-2 px-10 rounded-lg shadow-md"
+          >
+            Get Quote
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
