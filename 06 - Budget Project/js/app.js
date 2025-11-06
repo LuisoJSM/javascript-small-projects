@@ -1,0 +1,104 @@
+// Variables y Selectores
+const form = document.querySelector('#agregar-gasto');
+const expensesList = document.querySelector('#gastos ul');
+
+let budget;
+
+// Eventos
+eventListeners();
+function eventListeners() {
+    document.addEventListener('DOMContentLoaded', askBudget);
+    form.addEventListener('submit', addExpense);
+}
+
+// Clases
+class Budget {
+    constructor(budget) {
+        this.budget = Number(budget);
+        this.balance = Number(budget);
+        this.expenses = [];
+    }
+
+    newExpense(expense) {
+        this.expenses = [...this.expenses, expense];
+        console.log(this.expenses);
+    }
+}
+
+class UserInterface {
+
+    insertBudget(amount) {
+        const { budget, balance } = amount;
+        document.querySelector('#total').textContent = budget;
+        document.querySelector('#restante').textContent = balance;
+    };
+
+
+
+    showAlert(message, type) {
+        const divMessage = document.createElement('DIV');
+        divMessage.classList.add('text-center', 'alert');
+
+
+        if(type === 'error') {
+            divMessage.classList.add('alert-danger');
+        } else {
+             divMessage.classList.add('alert-success');
+        }
+
+        divMessage.textContent = message;
+
+        // Insert into HTML
+
+        document.querySelector('.primario').insertBefore(divMessage, form);
+
+        // Remove
+
+        setTimeout(() => {
+            divMessage.remove();
+        }, 2000);
+
+    }
+
+
+
+ }
+
+const ui = new UserInterface();
+
+// Funciones
+function askBudget() {
+    const userBudget = prompt('¿Cuál es tu presupuesto?');
+    console.log(parseFloat(userBudget));
+
+    if (userBudget === '' || userBudget === null || isNaN(userBudget) || userBudget <= 0) {
+        window.location.reload();
+    }
+
+    budget = new Budget(userBudget);
+    console.log(budget);
+
+    ui.insertBudget(budget);
+}
+
+// Add Expense
+function addExpense(e) {
+    e.preventDefault();
+
+
+    const name = document.querySelector('#gasto').value;
+    const amount = Number(document.querySelector('#cantidad').value);
+
+    if (name === '' || amount === '') {
+        ui.showAlert('Ambos campos son obligatorios', 'error');
+        return;
+    } else if (amount <= 0 || isNaN(amount)) {
+    ui.showAlert('Cantidad no válida', 'error');
+    return;
+    }
+
+    const expense = { name, amount, id: Date.now() };
+
+    budget.newExpense(expense);
+    ui.showAlert('Gasto agregado correctamente');
+}
