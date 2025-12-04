@@ -1,17 +1,17 @@
-// Variables y Selectores
+
 const form = document.querySelector("#agregar-gasto");
 const expensesList = document.querySelector("#gastos ul");
 
 let budget;
 
-// Eventos
+
 eventListeners();
 function eventListeners() {
   document.addEventListener("DOMContentLoaded", askBudget);
   form.addEventListener("submit", addExpense);
 }
 
-// Clases
+
 class Budget {
   constructor(budget) {
     this.budget = Number(budget);
@@ -21,12 +21,20 @@ class Budget {
 
   newExpense(expense) {
     this.expenses = [...this.expenses, expense];
-    console.log(this.expenses);
+    this.remainingBudget();
   }
 
   removeExpense(id) {
     this.expenses = this.expenses.filter(expense => expense.id !== id);
-    console.log(this.expenses);
+    this.remainingBudget();
+  }
+
+  remainingBudget() {
+    const spent = this.expenses.reduce(
+      (total, expense) => total + expense.amount,
+      0
+    );
+    this.balance = this.budget - spent;
   }
 }
 
@@ -35,6 +43,28 @@ class UserInterface {
     const { budget, balance } = amount;
     document.querySelector("#total").textContent = budget;
     document.querySelector("#restante").textContent = balance;
+    this.colorBalance(balance, budget);
+  }
+
+  updateBalance(balance, total) {
+    document.querySelector("#restante").textContent = balance;
+    this.colorBalance(balance, total);
+  }
+
+  colorBalance(balance, total) {
+    const restanteDiv = document.querySelector(".restante");
+
+    restanteDiv.classList.remove("alert-success", "alert-warning", "alert-danger");
+
+    const percentage = (balance / total) * 100;
+
+    if (percentage < 25) {
+      restanteDiv.classList.add("alert-danger");
+    } else if (percentage < 50) {
+      restanteDiv.classList.add("alert-warning");
+    } else {
+      restanteDiv.classList.add("alert-success");
+    }
   }
 
   showAlert(message, type) {
@@ -49,22 +79,18 @@ class UserInterface {
 
     divMessage.textContent = message;
 
-    // Insert into HTML
     document.querySelector(".primario").insertBefore(divMessage, form);
 
-    // Remove
     setTimeout(() => {
       divMessage.remove();
     }, 2000);
   }
 
   addExpense(expenses) {
-    // Clean previous HTML
     while (expensesList.firstChild) {
       expensesList.removeChild(expensesList.firstChild);
     }
 
-    
     expenses.forEach(expense => {
       const { amount, name, id } = expense;
 
@@ -74,15 +100,13 @@ class UserInterface {
       newExpense.dataset.id = id;
 
       newExpense.innerHTML = `
-        ${name} <span class="badge badge-primary badge-pill">${amount}</span>
+        ${name} <span class="badge badge-primary badge-pill">$ ${amount}</span>
       `;
 
       const btnRemove = document.createElement("button");
       btnRemove.classList.add("btn", "btn-danger", "borrar-gasto", "btn-sm");
       btnRemove.textContent = "Borrar x";
-      btnRemove.onclick = () => {
-        removeExpense(id);
-      };
+      btnRemove.onclick = () => removeExpense(id);
 
       newExpense.appendChild(btnRemove);
       expensesList.appendChild(newExpense);
@@ -92,10 +116,9 @@ class UserInterface {
 
 const ui = new UserInterface();
 
-// Funciones
+
 function askBudget() {
   const userBudget = prompt("¿Cuál es tu presupuesto?");
-  console.log(parseFloat(userBudget));
 
   if (
     userBudget === "" ||
@@ -108,7 +131,6 @@ function askBudget() {
   }
 
   budget = new Budget(userBudget);
-  console.log(budget);
 
   ui.insertBudget(budget);
 }
@@ -123,7 +145,7 @@ function addExpense(e) {
   if (name === "" || isNaN(amount)) {
     ui.showAlert("Ambos campos son obligatorios", "error");
     return;
-  } else if (amount <= 0 || isNaN(amount)) {
+  } else if (amount <= 0) {
     ui.showAlert("Cantidad no válida", "error");
     return;
   }
@@ -133,15 +155,22 @@ function addExpense(e) {
   budget.newExpense(expense);
   ui.showAlert("Gasto agregado correctamente");
 
-  const { expenses } = budget;
+  const { expenses, balance, budget: total } = budget;
+
   ui.addExpense(expenses);
+  ui.updateBalance(balance, total);
 
   form.reset();
 }
 
-// Eliminar gasto
+
 function removeExpense(id) {
   budget.removeExpense(id);
-  const { expenses } = budget;
+
+  const { expenses, balance, budget: total } = budget;
+
   ui.addExpense(expenses);
+  ui.updateBalance(balance, total);
+
+  ui.showAlert("Gasto eliminado y presupuesto actualizado", "success");
 }
