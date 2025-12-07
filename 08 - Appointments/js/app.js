@@ -5,9 +5,12 @@ const fechaInput = document.querySelector("#fecha");
 const sintomasInput = document.querySelector("#sintomas");
 const formulario = document.querySelector("#formulario-cita");
 const contenedorCitas = document.querySelector("#citas");
+// Seleccionamos el input por su ID o tipo
+const btnSubmit = document.querySelector("#formulario-cita input[type='submit']");
 
 // Objeto de cita
 const citaObj = {
+  id: generarId(),
   paciente: "",
   propietario: "",
   email: "",
@@ -23,6 +26,8 @@ fechaInput.addEventListener("change", datosCita);
 sintomasInput.addEventListener("change", datosCita);
 
 formulario.addEventListener("submit", submitCita);
+
+let editando = false;
 
 class Notificacion {
   constructor({ texto, tipo }) {
@@ -68,9 +73,27 @@ class AdminCitas {
     this.mostrar();
   }
 
+  editar(citaActualizada) {
+    this.citas = this.citas.map((cita) =>
+      cita.id === citaActualizada.id ? citaActualizada : cita
+    );
+    this.mostrar();
+  }
+
+  eliminar(id) {
+    this.citas = this.citas.filter((cita) => cita.id !== id);
+    this.mostrar();
+  }
+
   mostrar() {
     while (contenedorCitas.firstChild) {
       contenedorCitas.removeChild(contenedorCitas.firstChild);
+    }
+
+   
+    if(this.citas.length === 0) {
+        contenedorCitas.innerHTML = '<p class="text-xl mt-5 mb-10 text-center">No Hay Pacientes</p>';
+        return;
     }
 
     this.citas.forEach((cita) => {
@@ -87,26 +110,50 @@ class AdminCitas {
       );
 
       const paciente = document.createElement("p");
-      paciente.classList.add("font-normal", "mb-3", "text-gray-700", "normal-case");
+      paciente.classList.add(
+        "font-normal",
+        "mb-3",
+        "text-gray-700",
+        "normal-case"
+      );
       paciente.innerHTML = `<span class="font-bold uppercase">Paciente: </span> ${cita.paciente}`;
 
       const propietario = document.createElement("p");
-      propietario.classList.add("font-normal", "mb-3", "text-gray-700", "normal-case");
+      propietario.classList.add(
+        "font-normal",
+        "mb-3",
+        "text-gray-700",
+        "normal-case"
+      );
       propietario.innerHTML = `<span class="font-bold uppercase">Propietario: </span> ${cita.propietario}`;
 
       const email = document.createElement("p");
-      email.classList.add("font-normal", "mb-3", "text-gray-700", "normal-case");
+      email.classList.add(
+        "font-normal",
+        "mb-3",
+        "text-gray-700",
+        "normal-case"
+      );
       email.innerHTML = `<span class="font-bold uppercase">E-mail: </span> ${cita.email}`;
 
       const fecha = document.createElement("p");
-      fecha.classList.add("font-normal", "mb-3", "text-gray-700", "normal-case");
+      fecha.classList.add(
+        "font-normal",
+        "mb-3",
+        "text-gray-700",
+        "normal-case"
+      );
       fecha.innerHTML = `<span class="font-bold uppercase">Fecha: </span> ${cita.fecha}`;
 
       const sintomas = document.createElement("p");
-      sintomas.classList.add("font-normal", "mb-3", "text-gray-700", "normal-case");
+      sintomas.classList.add(
+        "font-normal",
+        "mb-3",
+        "text-gray-700",
+        "normal-case"
+      );
       sintomas.innerHTML = `<span class="font-bold uppercase">Síntomas: </span> ${cita.sintomas}`;
 
-      // Botón Editar
       const btnEditar = document.createElement("button");
       btnEditar.classList.add(
         "py-2",
@@ -123,11 +170,10 @@ class AdminCitas {
       );
       btnEditar.innerHTML =
         'Editar <svg fill="none" class="h-5 w-5" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>';
-      btnEditar.onclick = () => {
-        alert("Diste click");
-      };
+      
+      const clone = structuredClone(cita);
+      btnEditar.onclick = () => cargarEdicion(clone);
 
-      // Botón eliminar
       const btnEliminar = document.createElement("button");
       btnEliminar.classList.add(
         "py-2",
@@ -144,6 +190,8 @@ class AdminCitas {
       );
       btnEliminar.innerHTML =
         'Eliminar <svg fill="none" class="h-5 w-5" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor"><path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+      
+      btnEliminar.onclick = () => this.eliminar(cita.id);
 
       const contenedorBotones = document.createElement("DIV");
       contenedorBotones.classList.add("flex", "justify-between", "mt-10");
@@ -151,7 +199,6 @@ class AdminCitas {
       contenedorBotones.appendChild(btnEditar);
       contenedorBotones.appendChild(btnEliminar);
 
-      // Agregar al HTML final
       divCita.appendChild(paciente);
       divCita.appendChild(propietario);
       divCita.appendChild(email);
@@ -180,22 +227,54 @@ function submitCita(e) {
     return;
   }
 
-  citas.agregar({ ...citaObj });
+  if (editando) {
+    citas.editar({ ...citaObj });
+    new Notificacion({
+      texto: "Guardado Correctamente",
+      tipo: "exito",
+    }).mostrar();
+  } else {
+    citas.agregar({ ...citaObj });
+    new Notificacion({
+      texto: "Paciente registrado",
+      tipo: "exito",
+    }).mostrar();
+  }
+
   formulario.reset();
   reiniciarObjetoCita();
-
-  new Notificacion({
-    texto: "Paciente registrado",
-    tipo: "exito",
-  }).mostrar();
+  
+  // CAMBIO CLAVE AQUÍ: Usamos .value porque es un input
+  btnSubmit.value = 'Registrar Paciente'; 
+  editando = false;
 }
 
 function reiniciarObjetoCita() {
   Object.assign(citaObj, {
+    id: generarId(),
     paciente: "",
     propietario: "",
     email: "",
     fecha: "",
     sintomas: "",
   });
+}
+
+function generarId() {
+  return Math.random().toString(36).substring(2) + Date.now();
+}
+
+function cargarEdicion(cita) {
+  Object.assign(citaObj, cita);
+
+  pacienteInput.value = cita.paciente;
+  propietarioInput.value = cita.propietario;
+  emailInput.value = cita.email;
+  fechaInput.value = cita.fecha;
+  sintomasInput.value = cita.sintomas;
+
+  editando = true;
+
+ 
+  btnSubmit.value = 'Guardar Cambios';
 }
